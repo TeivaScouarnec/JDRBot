@@ -1,9 +1,7 @@
 import os
 import discord
-import json
 from dotenv import load_dotenv
 from discord.ext import commands
-
 
 load_dotenv(dotenv_path="config")
 Server = commands.Bot
@@ -33,7 +31,12 @@ async def Player(ctx,arg1 = None,arg2 = None):
     NamePlayer = arg2
     user = ctx.author
     UserID = user.id
-    print (UserID)
+    AllNamePlayers : list = []
+
+    for nameplayer in PlayerLists:
+        Name = nameplayer.get("Name")
+        AllNamePlayers.append(Name)
+        print (AllNamePlayers)
 
     def embed(messageuser):
         message = discord.Embed(description=messageuser,colour=0xCC0000)
@@ -41,26 +44,33 @@ async def Player(ctx,arg1 = None,arg2 = None):
 
     if CommandPlayer == "show":
         if NamePlayer == None:
-            message = "Vous n'avez pas marqué le nom du joueur!"
+            message = "Actuellement, `" + str(AllNamePlayers) + "` sont cré(e)(s)"
             await ctx.send(embed=embed(message))
+            return
         else:
             if not NamePlayer in  PlayerLists:
                 message = "Ce joueur n'existe pas!"
                 await ctx.send(embed=embed(message))
-            else:
-                print(PlayerLists)
+                return
 
-    if CommandPlayer == "create":
+    elif CommandPlayer == "create":
         if NamePlayer == None:
             message = "Veuillez entrer un nom pour la fiche personnage"
             await ctx.send(embed=embed(message))
+            return
         else:
             if not NamePlayer in PlayerLists:
                 PlayerLists.append(SavePlayer(UserID,NamePlayer,"coucou"))
                 message = NamePlayer + " a été crée(e)!"
                 await ctx.send(embed=embed(message))
+                return
             else:
                 message = NamePlayer + " existe déjà!"
                 await ctx.send(embed=embed(message))
+                return
+    else:
+        message = "Veuillez entrer /create ou /show!"
+        await ctx.send(embed=embed(message))
+        return
 
 JDR.run(os.getenv("TOKEN"))
