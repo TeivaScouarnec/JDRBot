@@ -6,8 +6,8 @@ from discord.ext import commands
 load_dotenv(dotenv_path="config")
 Server = commands.Bot
 PlayerLists = []
-PlayerSheet = {}
 
+#save a sheet's Player
 def SavePlayer(idPlayer,name,descr):
     PlayerSheet = {
         "Id": idPlayer,
@@ -15,6 +15,27 @@ def SavePlayer(idPlayer,name,descr):
         "description": descr,
     }
     return PlayerSheet
+
+def SearchSheet(name,key,list):
+    for sheet in list:
+        if sheet[key] == name:
+            return sheet
+
+#get all name's players in server
+def GetAllNamePlayers():
+    Names : list = []
+    for nameplayer in PlayerLists:
+        Name = nameplayer.get("Name")
+        Names.append(Name)
+    return Names
+
+#get all id's players in server
+def GetAllIdUser():
+    Users : list = []
+    for user in PlayerLists:
+        Id = user.get("Id")
+        Users.append(Id)
+    return Users
 
 class JDRBot(commands.Bot):
     def __init__(self):
@@ -25,18 +46,18 @@ class JDRBot(commands.Bot):
 
 JDR = JDRBot()
 
+#Commands
 @JDR.command()
-async def Player(ctx,arg1 = None,arg2 = None):
+async def Player(ctx, arg1 = None, arg2 = None, arg3= None):
     CommandPlayer = arg1
     NamePlayer = arg2
+    Description = arg3
+
     user = ctx.author
     UserID = user.id
-    AllNamePlayers : list = []
 
-    for nameplayer in PlayerLists:
-        Name = nameplayer.get("Name")
-        AllNamePlayers.append(Name)
-        print (AllNamePlayers)
+    AllNamePlayers = GetAllNamePlayers()
+    AllIdPlayers = GetAllIdUser()
 
     def embed(messageuser):
         message = discord.Embed(description=messageuser,colour=0xCC0000)
@@ -48,8 +69,15 @@ async def Player(ctx,arg1 = None,arg2 = None):
             await ctx.send(embed=embed(message))
             return
         else:
-            if not NamePlayer in  PlayerLists:
+            if not NamePlayer in AllNamePlayers:
                 message = "Ce joueur n'existe pas!"
+                await ctx.send(embed=embed(message))
+                return
+            else:
+                PlayerSheet = SearchSheet(NamePlayer,"Name",PlayerLists)
+
+                message = "**Nom:** `" + str(PlayerSheet.get("Name")) + "`, **description** " + str(PlayerSheet.get("description"))
+
                 await ctx.send(embed=embed(message))
                 return
 
@@ -59,8 +87,8 @@ async def Player(ctx,arg1 = None,arg2 = None):
             await ctx.send(embed=embed(message))
             return
         else:
-            if not NamePlayer in PlayerLists:
-                PlayerLists.append(SavePlayer(UserID,NamePlayer,"coucou"))
+            if not NamePlayer in AllNamePlayers:
+                PlayerLists.append(SavePlayer(UserID,NamePlayer,Description))
                 message = NamePlayer + " a été crée(e)!"
                 await ctx.send(embed=embed(message))
                 return
